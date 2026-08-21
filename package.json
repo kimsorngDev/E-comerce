@@ -1,0 +1,21 @@
+{
+  "name": "e-comerce",
+  "version": "1.0.0",
+  "description": "E-Commerce V1",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kimsorngDev/E-comerce.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kimsorngDev/E-comerce/issues"
+  },
+  "homepage": "https://github.com/kimsorngDev/E-comerce#readme"
+}
