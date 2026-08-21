@@ -1,6 +1,8 @@
 import express from "express";
 
 import authRoutes from "./src/routes/auth.routes.js";
+import categoryRoutes from "./src/routes/category.routes.js";
+import productRoutes from "./src/routes/product.routes.js";
 
 const app = express();
 
@@ -17,6 +19,12 @@ app.get("/api/health", (req, res) => {
 
 // Authentication routes
 app.use("/api/auth", authRoutes);
+
+// Category routes
+app.use("/api/categories", categoryRoutes);
+
+// Product routes
+app.use("/api/products", productRoutes);
 
 // 404 handler
 app.use((req, res) => {
