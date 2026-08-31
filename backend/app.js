@@ -4,6 +4,7 @@ import cors from "cors";
 import authRoutes from "./src/routes/auth.routes.js";
 import categoryRoutes from "./src/routes/category.routes.js";
 import productRoutes from "./src/routes/product.routes.js";
+import cartRoutes from "./src/routes/cart.routes.js";
 
 const app = express();
 
@@ -29,6 +30,9 @@ app.use("/api/categories", categoryRoutes);
 
 // Product routes
 app.use("/api/products", productRoutes);
+
+// Cart routes
+app.use("/api/cart", cartRoutes);
 
 // 404 handler
 app.use((req, res) => {
