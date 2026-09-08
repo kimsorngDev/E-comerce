@@ -39,6 +39,7 @@ const register = async ({ name, email, password }) => {
     id: user.id,
     name: user.name,
     email: user.email,
+    role: user.role,
     createdAt: user.createdAt,
   };
 };
@@ -75,11 +76,12 @@ const login = async ({ email, password }) => {
     throw new Error("Invalid email or password");
   }
 
-  // 4. Create JWT
+  // 4. Create JWT (include role so middleware can read it without DB query)
   const token = jwt.sign(
     {
       userId: user.id,
       email: user.email,
+      role: user.role,
     },
     process.env.JWT_SECRET,
     {
@@ -93,6 +95,7 @@ const login = async ({ email, password }) => {
       id: user.id,
       name: user.name,
       email: user.email,
+      role: user.role,
     },
     token,
   };
