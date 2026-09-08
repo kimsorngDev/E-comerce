@@ -65,4 +65,54 @@ export {
   createOrder,
   getOrders,
   getOrderById,
+  getAllOrders,
+  updateOrderStatus,
+};
+
+/**
+ * Get ALL orders across all users (Admin only)
+ */
+const getAllOrders = async (req, res) => {
+  try {
+    const orders = await orderService.getAllOrders();
+    return res.status(200).json({
+      success: true,
+      orders,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Update an order's status (Admin only)
+ */
+const updateOrderStatus = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        message: "status field is required",
+      });
+    }
+
+    const order = await orderService.updateOrderStatus(orderId, status);
+    return res.status(200).json({
+      success: true,
+      message: `Order status updated to ${status}`,
+      order,
+    });
+  } catch (error) {
+    const statusCode = error.message === "Order not found" ? 404 : 400;
+    return res.status(statusCode).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
