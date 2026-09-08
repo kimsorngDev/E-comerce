@@ -199,8 +199,88 @@ const getOrderById = async (userId, orderId) => {
   return formatOrder(order);
 };
 
+// Valid status transitions — prevents illegal jumps (e.g. DELIVERED → PENDING)
+const STATUS_TRANSITIONS = {
+  PENDING:    ["CONFIRMED", "CANCELLED"],
+  CONFIRMED:  ["PROCESSING", "CANCELLED"],
+  PROCESSING: ["SHIPPED", "CANCELLED"],
+  SHIPPED:    ["DELIVERED"],
+  DELIVERED:  [],
+  CANCELLED:  [],
+};
+
+/**
+ * Get ALL orders across all users (Admin only).
+ * @returns {Promise<Array<Object>>}
+ */
+const getAllOrders = async () => {
+  const orders = await prisma.order.findMany({
+    include: {
+      user: {
+        select: { id: true, name: true, email: true, role: true },
+      },
+      items: {
+        include: { product: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return orders.map((order) => ({
+    ...formatOrder(order),
+    user: order.user,
+  }));
+};
+
+/**
+ * Update the status of an order (Admin only).
+ * Validates that the transition is legal.
+ * @param {number|string} orderId
+ * @param {string} newStatus
+ * @returns {Promise<Object>}
+ */
+const updateOrderStatus = async (orderId, newStatus) => {
+  const parsedOrderId = parseInt(orderId, 10);
+  if (isNaN(parsedOrderId)) {
+    throw new Error("Invalid order ID");
+  }
+
+  const validStatuses = Object.keys(STATUS_TRANSITIONS);
+  if (!validStatuses.includes(newStatus)) {
+    throw new Error(`Invalid status. Must be one of: ${validStatuses.join(", ")}`);
+  }
+
+  const order = await prisma.order.findUnique({
+    where: { id: parsedOrderId },
+    include: { items: { include: { product: true } } },
+  });
+
+  if (!order) {
+    throw new Error("Order not found");
+  }
+
+  const allowed = STATUS_TRANSITIONS[order.status];
+  if (!allowed.includes(newStatus)) {
+    throw new Error(
+      `Cannot transition order from '${order.status}' to '${newStatus}'. ` +
+      (allowed.length ? `Allowed: ${allowed.join(", ")}` : "No further transitions allowed.")
+    );
+  }
+
+  const updated = await prisma.order.update({
+    where: { id: parsedOrderId },
+    data: { status: newStatus },
+    include: { items: { include: { product: true } } },
+  });
+
+  return formatOrder(updated);
+};
+
+
 export {
   createOrder,
   getOrders,
   getOrderById,
+  getAllOrders,
+  updateOrderStatus,
 };
