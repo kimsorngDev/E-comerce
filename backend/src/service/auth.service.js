@@ -102,7 +102,35 @@ const login = async ({ email, password }) => {
 };
 
 
+/**
+ * Get user profile details by ID
+ */
+const getUserProfile = async (userId) => {
+  const parsedUserId = parseInt(userId, 10);
+  if (isNaN(parsedUserId)) {
+    throw new Error("Invalid user ID");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: parsedUserId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return user;
+};
+
 export {
   register,
   login,
+  getUserProfile,
 };

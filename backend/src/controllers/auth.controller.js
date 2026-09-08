@@ -35,10 +35,18 @@ const login = async (req, res) => {
 };
 
 const getMe = async (req, res) => {
-  return res.status(200).json({
-    success: true,
-    user: req.user,
-  });
+  try {
+    const user = await authService.getUserProfile(req.user.userId);
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 export {

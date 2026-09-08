@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
 export default function Login() {
   const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -73,15 +76,22 @@ export default function Login() {
 
       console.log("Login successful:", data);
 
-      if (typeof window !== "undefined") {
-        localStorage.setItem("isLoggedIn", "true");
-        if (data.token) {
-          localStorage.setItem("token", data.token);
-        }
-        window.dispatchEvent(new Event("storage"));
+      // Save login state
+      localStorage.setItem("isLoggedIn", "true");
+
+      // Save token if backend sends one
+      if (data.token) {
+        localStorage.setItem("token", data.token);
       }
 
-      router.push("/admin");
+      // Tell other components that login state changed
+      window.dispatchEvent(new Event("storage"));
+
+      // Check for redirect query parameter
+      const params = new URLSearchParams(window.location.search);
+      const redirectUrl = params.get("redirect") || "/";
+
+      router.push(redirectUrl);
     } catch (error) {
       console.error("Login error:", error);
       setLoginError("Something went wrong. Please try again.");
@@ -93,11 +103,13 @@ export default function Login() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
+        {/* Title */}
         <h1 className="mb-6 text-center text-3xl font-bold">
           Login
         </h1>
 
         <form onSubmit={handleSubmit}>
+          {/* Email */}
           <Input
             label="Email"
             type="email"
@@ -112,6 +124,7 @@ export default function Login() {
             </p>
           )}
 
+          {/* Password */}
           <Input
             label="Password"
             type="password"
@@ -126,17 +139,31 @@ export default function Login() {
             </p>
           )}
 
+          {/* Login Error */}
           {loginError && (
             <p className="mb-4 text-center text-sm text-red-500">
               {loginError}
             </p>
           )}
 
-          <Button type="submit" disabled={isLoading}>
+          {/* Login Button */}
+          <Button
+            type="submit"
+            disabled={isLoading}
+          >
             {isLoading ? "Logging in..." : "Login"}
           </Button>
 
-
+          {/* Register Link */}
+          <p className="mt-4 text-center text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Link
+              href="/register"
+              className="font-medium text-blue-600 hover:underline"
+            >
+              Register
+            </Link>
+          </p>
         </form>
       </div>
     </main>

@@ -21,6 +21,7 @@ const formatCart = (cart) => {
             id: item.product.id,
             name: item.product.name,
             price: productPrice,
+            imageUrl: item.product.imageUrl || item.product.image || null,
           }
         : null,
     };
