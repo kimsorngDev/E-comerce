@@ -1,10 +1,13 @@
 import express from "express";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
 
 import authRoutes from "./src/routes/auth.routes.js";
 import categoryRoutes from "./src/routes/category.routes.js";
 import productRoutes from "./src/routes/product.routes.js";
 import cartRoutes from "./src/routes/cart.routes.js";
+import orderRoutes from "./src/routes/order.routes.js";
+import swaggerSpec from "./src/config/swagger.js";
 
 const app = express();
 
@@ -33,6 +36,21 @@ app.use("/api/products", productRoutes);
 
 // Cart routes
 app.use("/api/cart", cartRoutes);
+
+// Order routes
+app.use("/api/orders", orderRoutes);
+
+// Swagger API Docs
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: "E-Commerce API Docs",
+  customCss: `.swagger-ui .topbar { display: none }`,
+}));
+
+// Expose raw OpenAPI JSON spec
+app.get("/api/docs.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
+});
 
 // 404 handler
 app.use((req, res) => {
