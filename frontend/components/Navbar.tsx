@@ -12,186 +12,181 @@ export default function Navbar() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const checkAuth = () => {
-      const loggedIn = localStorage.getItem("isLoggedIn");
-      setIsLoggedIn(loggedIn === "true");
+      const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+      setIsLoggedIn(loggedIn);
+      setIsAdmin(localStorage.getItem("isAdmin") === "true");
+      setUserName(localStorage.getItem("userName") || "");
     };
 
     checkAuth();
     window.addEventListener("storage", checkAuth);
-
-    return () => {
-      window.removeEventListener("storage", checkAuth);
-    };
+    return () => window.removeEventListener("storage", checkAuth);
   }, []);
 
-  const handleOpen = () => {
+  useEffect(() => {
     setIsOpen(false);
-  };
+  }, [pathname]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("token");
-    setIsLoggedIn(false);
-    setIsOpen(false);
-    window.dispatchEvent(new Event("storage"));
-    router.push("/login");
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
   };
 
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/products", label: "Products" },
+    { href: "/categories", label: "Categories" },
     { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
   ];
 
-  const userLinks = [
-    { href: "/orders", label: "My Orders", icon: "bi-bag-check" },
-    { href: "/account", label: "Account", icon: "bi-person-circle" },
-  ];
+  // If in admin route, avoid overlapping nav
+  const isAdminRoute = pathname.startsWith("/admin");
+  if (isAdminRoute) {
+    return null;
+  }
+
+  const displayCartCount = cartCount;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/95 backdrop-blur-md shadow-xs transition-all">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
+    <header className="sticky top-0 z-50 w-full bg-white border-b border-slate-200/80 shadow-xs">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 h-18 gap-4">
         
-        {/* Brand Logo */}
+        {/* Brand Logo: ShopEase with Shopping Bag */}
         <Link
           href="/"
-          className="flex items-center gap-2 text-xl font-black tracking-tight text-gray-900 transition hover:opacity-90"
+          className="flex items-center gap-2.5 shrink-0 text-xl font-bold tracking-tight text-slate-900 group"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white shadow-md shadow-blue-500/20">
-            <span className="text-lg font-extrabold">M</span>
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm transition-transform duration-200 group-hover:scale-105">
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 0 1-8 0" />
+            </svg>
           </div>
-          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            MyShop
+          <span className="text-xl font-extrabold tracking-tight text-slate-900">
+            ShopEase
           </span>
         </Link>
 
-        {/* Desktop Main Navigation */}
-        <nav className="hidden md:flex items-center gap-1">
+        {/* Global Search Bar */}
+        <div className="flex-1 max-w-md hidden md:block">
+          <form onSubmit={handleSearch} className="relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search for products..."
+              className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-100 border border-slate-200/70 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-all shadow-2xs"
+            />
+            <svg
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <circle cx="11" cy="11" r="8" strokeWidth="2" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35" />
+            </svg>
+          </form>
+        </div>
+
+        {/* Desktop Navigation Links */}
+        <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
-                key={link.href}
+                key={link.label}
                 href={link.href}
-                className={`rounded-lg px-3.5 py-2 text-sm font-medium transition-all ${
+                className={`text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-blue-50 text-blue-600 font-semibold"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    ? "text-slate-900 font-bold"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 {link.label}
               </Link>
             );
           })}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="text-xs font-bold uppercase tracking-wider text-blue-600 hover:text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg"
+            >
+              Admin
+            </Link>
+          )}
         </nav>
 
-        {/* Right Actions Header */}
-        <div className="hidden md:flex items-center gap-3">
-          {/* Shopping Cart Button */}
+        {/* Right User & Cart Action Icons */}
+        <div className="flex items-center gap-3">
+          {/* User Account Button */}
           <Link
-            href="/cart"
-            className="relative flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 shadow-2xs transition hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-600"
-            aria-label="Shopping cart"
+            href={isLoggedIn ? "/account" : "/login"}
+            className="flex items-center gap-2 h-10 px-2 sm:px-3 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors"
+            title={isLoggedIn ? `Account (${userName || "User"})` : "Sign In"}
           >
-            <svg className="h-5 w-5 text-gray-600 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            <span className="font-semibold">Cart</span>
-            {cartCount > 0 && (
-              <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-600 px-1.5 text-xs font-bold text-white shadow-xs">
-                {cartCount}
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-700 font-bold text-xs">
+              {isLoggedIn ? (userName ? userName.charAt(0).toUpperCase() : "U") : (
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              )}
+            </div>
+            {isLoggedIn && (
+              <span className="text-xs font-semibold text-slate-800 hidden sm:inline">
+                {userName ? userName.split(" ")[0] : "Account"}
               </span>
             )}
           </Link>
 
-          <div className="h-5 w-[1px] bg-gray-200" />
-
-          {/* Authentication State Navigation */}
-          {isLoggedIn ? (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/orders"
-                className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
-                  pathname === "/orders"
-                    ? "bg-blue-50 text-blue-600 font-semibold"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                Orders
-              </Link>
-
-              <Link
-                href="/account"
-                className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
-                  pathname === "/account"
-                    ? "bg-blue-50 text-blue-600 font-semibold"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                Account
-              </Link>
-
-              <Link
-                href="/admin"
-                className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-100 transition"
-              >
-                Admin Panel
-              </Link>
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-xl bg-gray-100 px-3.5 py-2 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 transition"
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/login"
-                className="rounded-xl px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition"
-              >
-                Sign In
-              </Link>
-
-              <Link
-                href="/register"
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition"
-              >
-                Get Started
-              </Link>
-            </div>
-          )}
-        </div>
-
-        {/* Mobile Hamburger Button */}
-        <div className="flex items-center gap-2 md:hidden">
+          {/* Shopping Cart Button with Counter */}
           <Link
             href="/cart"
-            className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 transition-colors"
+            title="Shopping Cart"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.9"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 0 1-8 0" />
             </svg>
-            {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
-                {cartCount}
-              </span>
-            )}
+            <span className="absolute top-1.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-slate-900 px-1 text-[10px] font-bold text-white shadow-xs">
+              {displayCartCount}
+            </span>
           </Link>
 
+          {/* Mobile Menu Trigger */}
           <button
-            type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-            aria-label="Toggle menu"
+            className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100"
+            aria-label="Toggle Menu"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isOpen ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               ) : (
@@ -200,70 +195,49 @@ export default function Navbar() {
             </svg>
           </button>
         </div>
-
       </div>
 
-      {/* Mobile Dropdown Menu */}
+      {/* Mobile Search & Menu Drawer */}
       {isOpen && (
-        <div className="border-t border-gray-100 bg-white px-4 pt-3 pb-6 md:hidden shadow-lg animate-in slide-in-from-top-2">
-          <div className="space-y-1">
+        <div className="md:hidden border-t border-slate-100 bg-white px-4 py-4 space-y-3">
+          <form onSubmit={handleSearch} className="relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search for products..."
+              className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-100 border border-slate-200/70 text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
+            />
+            <svg
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <circle cx="11" cy="11" r="8" strokeWidth="2" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35" />
+            </svg>
+          </form>
+
+          <div className="flex flex-col space-y-2 pt-2">
             {navLinks.map((link) => (
               <Link
-                key={link.href}
+                key={link.label}
                 href={link.href}
-                onClick={handleOpen}
-                className="block rounded-lg px-3 py-2.5 text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100"
               >
                 {link.label}
               </Link>
             ))}
-          </div>
-
-          <div className="mt-4 border-t border-gray-100 pt-4">
-            {isLoggedIn ? (
-              <div className="space-y-1">
-                {userLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={handleOpen}
-                    className="block rounded-lg px-3 py-2.5 text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                <Link
-                  href="/admin"
-                  onClick={handleOpen}
-                  className="block rounded-lg px-3 py-2.5 text-base font-medium text-gray-700 hover:bg-gray-100"
-                >
-                  Admin Panel
-                </Link>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="w-full text-left rounded-lg px-3 py-2.5 text-base font-semibold text-red-600 hover:bg-red-50"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <Link
-                  href="/login"
-                  onClick={handleOpen}
-                  className="flex items-center justify-center rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/register"
-                  onClick={handleOpen}
-                  className="flex items-center justify-center rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 shadow-xs"
-                >
-                  Register
-                </Link>
-              </div>
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 rounded-lg text-sm font-medium text-blue-600 bg-blue-50"
+              >
+                Admin Console
+              </Link>
             )}
           </div>
         </div>

@@ -8,9 +8,8 @@ export default function AdminSidebar() {
   const router = useRouter();
 
   const menuItems = [
-    { href: "/admin", label: "Dashboard", icon: "bi-speedometer2" },
+    { href: "/admin", label: "Dashboard", icon: "bi-grid" },
     { href: "/admin/products", label: "Products", icon: "bi-box-seam" },
-    { href: "/admin/orders", label: "Orders", icon: "bi-cart-check" },
     { href: "/admin/categories", label: "Categories", icon: "bi-tags" },
     { href: "/admin/users", label: "Users", icon: "bi-people" },
   ];
@@ -18,35 +17,50 @@ export default function AdminSidebar() {
   const handleLogout = () => {
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("adminEmail");
-    router.push("/admin/login");
+    router.push("/login");
   };
 
   return (
-    <aside className="w-full md:w-64 bg-slate-900 text-white min-h-screen p-4 flex flex-col justify-between shrink-0 shadow-xl">
+    <aside className="w-64 bg-[#0f172a] text-white min-h-screen p-5 flex flex-col justify-between shrink-0">
       <div>
-        {/* Brand Header */}
-        <div className="flex items-center gap-3 px-3 py-4 border-b border-slate-800">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white font-black text-lg">
-            A
+        {/* Brand Logo: ShopEase with Shopping Bag */}
+        <Link href="/admin" className="flex items-center gap-2.5 px-2 py-3 mb-6">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-900 shadow-sm">
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 0 1-8 0" />
+            </svg>
           </div>
-          <div>
-            <h2 className="font-bold text-base tracking-wide text-slate-100">Admin Console</h2>
-            <p className="text-xs text-slate-400">Management Panel</p>
-          </div>
-        </div>
+          <span className="text-xl font-bold tracking-tight text-white">
+            ShopEase
+          </span>
+        </Link>
 
-        {/* Navigation Items */}
-        <nav className="mt-6 space-y-1.5">
+        {/* Menu Navigation */}
+        <nav className="space-y-1.5">
           {menuItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive =
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : pathname.startsWith(item.href);
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                className={`flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
                   isActive
-                    ? "bg-blue-600 text-white font-semibold shadow-md shadow-blue-600/30"
-                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                    ? "bg-slate-800 text-white font-semibold"
+                    : "text-slate-400 hover:bg-slate-800/60 hover:text-white"
                 }`}
               >
                 <i className={`bi ${item.icon} text-lg`}></i>
@@ -57,20 +71,23 @@ export default function AdminSidebar() {
         </nav>
       </div>
 
-      {/* Footer Info */}
-      <div className="px-3 py-4 border-t border-slate-800 space-y-3">
-        <Link href="/" className="flex items-center gap-2 text-xs text-slate-400 hover:text-slate-200 transition-colors">
-          <i className="bi bi-shop"></i>
-          Back to Store
+      {/* Bottom Logout and Back Link */}
+      <div className="space-y-3 pt-6 border-t border-slate-800">
+        <Link
+          href="/"
+          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:bg-slate-800/60 hover:text-white transition-colors"
+        >
+          <i className="bi bi-shop text-base"></i>
+          <span>Back to Store</span>
         </Link>
+
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 w-full text-xs text-red-400 hover:text-red-300 transition-colors"
+          className="flex items-center gap-3 px-4 py-2.5 w-full rounded-xl text-xs font-medium text-slate-400 hover:bg-slate-800/60 hover:text-rose-400 transition-colors"
         >
-          <i className="bi bi-box-arrow-right"></i>
-          Logout
+          <i className="bi bi-box-arrow-right text-base"></i>
+          <span>Logout</span>
         </button>
-        <p className="text-xs text-slate-600">E-Commerce Admin v1.0</p>
       </div>
     </aside>
   );

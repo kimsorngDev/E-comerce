@@ -32,7 +32,25 @@ export async function fetchApi<T = any>(
   const data = await res.json();
 
   if (!res.ok || data.success === false) {
-    throw new Error(data.message || `API error: ${res.status}`);
+    const errorMsg = data.message || `API error: ${res.status}`;
+    if (
+      res.status === 401 ||
+      errorMsg === "User not found" ||
+      errorMsg === "Invalid or expired token" ||
+      errorMsg === "Authentication required"
+    ) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userName");
+        localStorage.removeItem("isAdmin");
+        localStorage.removeItem("adminEmail");
+        window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new Event("cart-updated"));
+      }
+    }
+    throw new Error(errorMsg);
   }
 
   return data;
@@ -174,5 +192,19 @@ export const authApi = {
   getMe: async (): Promise<{ id: number; name?: string; email: string; createdAt: string }> => {
     const res = await fetchApi<{ success: boolean; user: any }>("/auth/me");
     return res.user;
+  },
+  login: async (email: string, password: string): Promise<{ token: string; user: any }> => {
+    const res = await fetchApi<{ success: boolean; token: string; user: any }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+    return res;
+  },
+  register: async (name: string, email: string, password: string): Promise<{ message?: string; user?: any; token?: string }> => {
+    const res = await fetchApi<{ success: boolean; message?: string; user?: any; token?: string }>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name, email, password }),
+    });
+    return res;
   },
 };

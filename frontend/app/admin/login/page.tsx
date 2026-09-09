@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-// Admin credentials stored in .env.local (frontend-only)
+import { authApi } from "@/lib/api";
+
+// Admin credentials stored in .env.local (fallback if needed)
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@store.com";
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "Admin@1234";
 
@@ -29,18 +31,29 @@ export default function AdminLoginPage() {
     setError(null);
     setLoading(true);
 
-    // Simulate a small delay for UX
-    await new Promise((r) => setTimeout(r, 600));
-
     try {
-      // Frontend-only credential check
+      // 1. Try logging in via backend API
+      const data = await authApi.login(email.trim(), password);
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("isAdmin", "true");
+      localStorage.setItem("adminEmail", email.trim().toLowerCase());
+
+      window.dispatchEvent(new Event("storage"));
+      router.push("/admin");
+    } catch (err: any) {
+      // Fallback check against env credentials
       if (email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD) {
-        // Store admin session in localStorage
         localStorage.setItem("isAdmin", "true");
+        localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("adminEmail", email.trim().toLowerCase());
+        window.dispatchEvent(new Event("storage"));
         router.push("/admin");
       } else {
-        setError("Invalid admin credentials. Please try again.");
+        setError(err.message || "Invalid admin credentials. Please try again.");
       }
     } finally {
       setLoading(false);

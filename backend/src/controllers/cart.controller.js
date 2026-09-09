@@ -12,7 +12,8 @@ const getCart = async (req, res) => {
       cart,
     });
   } catch (error) {
-    return res.status(400).json({
+    const statusCode = error.message === "User not found" || error.message === "Invalid user ID" ? 401 : 400;
+    return res.status(statusCode).json({
       success: false,
       message: error.message,
     });
@@ -33,7 +34,8 @@ const addToCart = async (req, res) => {
       cart,
     });
   } catch (error) {
-    return res.status(400).json({
+    const statusCode = error.message === "User not found" || error.message === "Invalid user ID" ? 401 : 400;
+    return res.status(statusCode).json({
       success: false,
       message: error.message,
     });
@@ -56,7 +58,8 @@ const updateCartItem = async (req, res) => {
       cart,
     });
   } catch (error) {
-    return res.status(400).json({
+    const statusCode = error.message === "User not found" || error.message === "Invalid user ID" ? 401 : 400;
+    return res.status(statusCode).json({
       success: false,
       message: error.message,
     });
@@ -78,7 +81,8 @@ const removeCartItem = async (req, res) => {
       cart,
     });
   } catch (error) {
-    return res.status(400).json({
+    const statusCode = error.message === "User not found" || error.message === "Invalid user ID" ? 401 : 400;
+    return res.status(statusCode).json({
       success: false,
       message: error.message,
     });

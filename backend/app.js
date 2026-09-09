@@ -7,10 +7,7 @@ import categoryRoutes from "./src/routes/category.routes.js";
 import productRoutes from "./src/routes/product.routes.js";
 import cartRoutes from "./src/routes/cart.routes.js";
 import orderRoutes from "./src/routes/order.routes.js";
-<<<<<<< HEAD
 import swaggerSpec from "./src/config/swagger.js";
-=======
->>>>>>> 8b2c505 (update week6)
 
 const app = express();
 
@@ -43,7 +40,6 @@ app.use("/api/cart", cartRoutes);
 // Order routes
 app.use("/api/orders", orderRoutes);
 
-<<<<<<< HEAD
 // Swagger API Docs
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customSiteTitle: "E-Commerce API Docs",
@@ -55,9 +51,6 @@ app.get("/api/docs.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.send(swaggerSpec);
 });
-
-=======
->>>>>>> 8b2c505 (update week6)
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({

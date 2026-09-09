@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { orderApi, Order } from "@/lib/api";
+import StatusBadge from "@/components/ui/StatusBadge";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -37,21 +38,6 @@ export default function AdminOrdersPage() {
       alert(err.message || "Failed to update status");
     } finally {
       setUpdatingId(null);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status.toUpperCase()) {
-      case "DELIVERED":
-        return "bg-emerald-100 text-emerald-800";
-      case "SHIPPED":
-        return "bg-blue-100 text-blue-800";
-      case "PROCESSING":
-        return "bg-amber-100 text-amber-800";
-      case "CANCELLED":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-purple-100 text-purple-800";
     }
   };
 
@@ -115,9 +101,7 @@ export default function AdminOrdersPage() {
                       </td>
 
                       <td className="px-4 py-3">
-                        <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${getStatusBadge(order.status)}`}>
-                          {order.status}
-                        </span>
+                        <StatusBadge status={order.status} />
                       </td>
 
                       <td className="px-4 py-3 text-right">
