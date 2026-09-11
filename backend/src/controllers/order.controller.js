@@ -1,118 +1,59 @@
 import * as orderService from "../service/order.service.js";
 
-/**
- * Create a new order from current cart (Checkout)
- */
-const createOrder = async (req, res) => {
+const createOrder = async (req, res, next) => {
   try {
-    const userId = req.user.userId;
-    const order = await orderService.createOrder(userId);
-    return res.status(201).json({
-      success: true,
-      message: "Order created successfully",
-      order,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    const order = await orderService.createOrder(req.user.userId);
+    return res.status(201).json({ success: true, message: "Order created successfully", order });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = 400;
+    next(err);
   }
 };
 
-/**
- * Get all orders for current user
- */
-const getOrders = async (req, res) => {
+
+const getOrders = async (req, res, next) => {
   try {
-    const userId = req.user.userId;
-    const orders = await orderService.getOrders(userId);
-    return res.status(200).json({
-      success: true,
-      orders,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    const orders = await orderService.getOrders(req.user.userId);
+    return res.status(200).json({ success: true, orders });
+  } catch (err) {
+    next(err);
   }
 };
 
-/**
- * Get single order details by ID
- */
-const getOrderById = async (req, res) => {
+const getOrderById = async (req, res, next) => {
   try {
-    const userId = req.user.userId;
-    const orderId = req.params.id;
-    const order = await orderService.getOrderById(userId, orderId);
-    return res.status(200).json({
-      success: true,
-      order,
-    });
-  } catch (error) {
-    const statusCode = error.message === "Order not found" ? 404 :
-                       error.message.includes("Unauthorized") ? 403 : 400;
-    return res.status(statusCode).json({
-      success: false,
-      message: error.message,
-    });
+    const order = await orderService.getOrderById(req.user.userId, req.params.id);
+    return res.status(200).json({ success: true, order });
+  } catch (err) {
+    if (err.message === "Order not found") err.statusCode = 404;
+    if (err.message?.includes("Unauthorized")) err.statusCode = 403;
+    next(err);
   }
 };
 
-export {
-  createOrder,
-  getOrders,
-  getOrderById,
-  getAllOrders,
-  updateOrderStatus,
-};
-
-/**
- * Get ALL orders across all users (Admin only)
- */
-const getAllOrders = async (req, res) => {
+const getAllOrders = async (req, res, next) => {
   try {
     const orders = await orderService.getAllOrders();
-    return res.status(200).json({
-      success: true,
-      orders,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(200).json({ success: true, orders });
+  } catch (err) {
+    next(err);
   }
 };
 
-/**
- * Update an order's status (Admin only)
- */
-const updateOrderStatus = async (req, res) => {
+const updateOrderStatus = async (req, res, next) => {
   try {
-    const orderId = req.params.id;
-    const { status } = req.body;
-
-    if (!status) {
-      return res.status(400).json({
-        success: false,
-        message: "status field is required",
-      });
-    }
-
-    const order = await orderService.updateOrderStatus(orderId, status);
+    const order = await orderService.updateOrderStatus(req.params.id, req.body.status);
     return res.status(200).json({
       success: true,
-      message: `Order status updated to ${status}`,
+      message: `Order status updated to ${req.body.status}`,
       order,
     });
-  } catch (error) {
-    const statusCode = error.message === "Order not found" ? 404 : 400;
-    return res.status(statusCode).json({
-      success: false,
-      message: error.message,
-    });
+  } catch (err) {
+    if (err.message === "Order not found") err.statusCode = 404;
+    if (err.message?.startsWith("Cannot transition")) err.statusCode = 400;
+    if (err.message?.startsWith("Invalid status")) err.statusCode = 400;
+    next(err);
   }
 };
+
+export { createOrder, getOrders, getOrderById, getAllOrders, updateOrderStatus };

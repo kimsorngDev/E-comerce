@@ -2,6 +2,7 @@ import express from "express";
 import * as productController from "../controllers/product.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import requireAdmin from "../middlewares/admin.middleware.js";
+import { validateCreateProduct, validateUpdateProduct } from "../middlewares/validate.middleware.js";
 
 const router = express.Router();
 
@@ -131,7 +132,7 @@ router.get("/:id", productController.getProductById);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/", authMiddleware, requireAdmin, productController.createProduct);
+router.post("/", authMiddleware, requireAdmin, validateCreateProduct, productController.createProduct);
 
 /**
  * @swagger
@@ -189,7 +190,7 @@ router.post("/", authMiddleware, requireAdmin, productController.createProduct);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/:id", authMiddleware, requireAdmin, productController.updateProduct);
+router.put("/:id", authMiddleware, requireAdmin, validateUpdateProduct, productController.updateProduct);
 
 /**
  * @swagger

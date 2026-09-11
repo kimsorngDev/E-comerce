@@ -2,6 +2,7 @@ import express from "express";
 import * as categoryController from "../controllers/category.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import requireAdmin from "../middlewares/admin.middleware.js";
+import { validateCategory } from "../middlewares/validate.middleware.js";
 
 const router = express.Router();
 
@@ -120,7 +121,7 @@ router.get("/:id", categoryController.getCategoryById);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/", authMiddleware, requireAdmin, categoryController.createCategory);
+router.post("/", authMiddleware, requireAdmin, validateCategory, categoryController.createCategory);
 
 /**
  * @swagger
@@ -178,7 +179,7 @@ router.post("/", authMiddleware, requireAdmin, categoryController.createCategory
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/:id", authMiddleware, requireAdmin, categoryController.updateCategory);
+router.put("/:id", authMiddleware, requireAdmin, validateCategory, categoryController.updateCategory);
 
 /**
  * @swagger

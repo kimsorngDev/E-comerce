@@ -1,6 +1,7 @@
 import express from "express";
 import * as authController from "../controllers/auth.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
+import { validateRegister, validateLogin } from "../middlewares/validate.middleware.js";
 
 const router = express.Router();
 
@@ -46,7 +47,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/register", authController.register);
+router.post("/register", validateRegister, authController.register);
 
 /**
  * @swagger
@@ -74,7 +75,7 @@ router.post("/register", authController.register);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/login", authController.login);
+router.post("/login", validateLogin, authController.login);
 
 /**
  * @swagger
