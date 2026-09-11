@@ -3,6 +3,7 @@ import * as orderController from "../controllers/order.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 <<<<<<< HEAD
 import requireAdmin from "../middlewares/admin.middleware.js";
+import { validateOrderStatus } from "../middlewares/validate.middleware.js";
 
 const router = express.Router();
 
@@ -226,7 +227,8 @@ router.get("/:id", authMiddleware, orderController.getOrderById);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.patch("/:id/status", authMiddleware, requireAdmin, orderController.updateOrderStatus);
+router.patch("/:id/status", authMiddleware, requireAdmin, validateOrderStatus, orderController.updateOrderStatus);
+router.put("/:id/status", authMiddleware, requireAdmin, validateOrderStatus, orderController.updateOrderStatus);
 
 =======
 

@@ -7,10 +7,8 @@ import categoryRoutes from "./src/routes/category.routes.js";
 import productRoutes from "./src/routes/product.routes.js";
 import cartRoutes from "./src/routes/cart.routes.js";
 import orderRoutes from "./src/routes/order.routes.js";
-<<<<<<< HEAD
 import swaggerSpec from "./src/config/swagger.js";
-=======
->>>>>>> 8b2c505 (update week6)
+import errorMiddleware from "./src/middlewares/error.middleware.js";
 
 const app = express();
 
@@ -40,10 +38,10 @@ app.use("/api/products", productRoutes);
 // Cart routes
 app.use("/api/cart", cartRoutes);
 
-// Order routes
+// Order routes (Customer & Admin)
 app.use("/api/orders", orderRoutes);
+app.use("/api/admin/orders", orderRoutes);
 
-<<<<<<< HEAD
 // Swagger API Docs
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customSiteTitle: "E-Commerce API Docs",
@@ -56,8 +54,7 @@ app.get("/api/docs.json", (req, res) => {
   res.send(swaggerSpec);
 });
 
-=======
->>>>>>> 8b2c505 (update week6)
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
@@ -65,5 +62,8 @@ app.use((req, res) => {
     message: "Route not found",
   });
 });
+
+// Centralized error handler (must be last)
+app.use(errorMiddleware);
 
 export default app;

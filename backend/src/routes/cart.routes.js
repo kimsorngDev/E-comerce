@@ -1,6 +1,7 @@
 import express from "express";
 import * as cartController from "../controllers/cart.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
+import { validateAddToCart, validateUpdateCartItem } from "../middlewares/validate.middleware.js";
 
 const router = express.Router();
 
@@ -84,8 +85,14 @@ router.get("/", authMiddleware, cartController.getCart);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
+ *       422:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/items", authMiddleware, cartController.addToCart);
+router.post("/items", authMiddleware, validateAddToCart, cartController.addToCart);
 
 /**
  * @swagger
@@ -136,8 +143,14 @@ router.post("/items", authMiddleware, cartController.addToCart);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
+ *       422:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put("/items/:itemId", authMiddleware, cartController.updateCartItem);
+router.put("/items/:itemId", authMiddleware, validateUpdateCartItem, cartController.updateCartItem);
 
 /**
  * @swagger

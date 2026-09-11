@@ -1,118 +1,53 @@
 import * as productService from "../service/product.service.js";
+import AppError from "../utils/AppError.js";
 
-/**
- * Create a new product
- */
-const createProduct = async (req, res) => {
+const createProduct = async (req, res, next) => {
   try {
     const product = await productService.createProduct(req.body);
-
-    return res.status(201).json({
-      success: true,
-      message: "Product created successfully",
-      product,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    return res.status(201).json({ success: true, message: "Product created successfully", product });
+  } catch (err) {
+    next(err);
   }
 };
 
-/**
- * Get all products (with optional filtering)
- */
-const getProducts = async (req, res) => {
+const getProducts = async (req, res, next) => {
   try {
     const { categoryId, search, minPrice, maxPrice } = req.query;
-    const products = await productService.getProducts({
-      categoryId,
-      search,
-      minPrice,
-      maxPrice,
-    });
-
-    return res.status(200).json({
-      success: true,
-      products,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    const products = await productService.getProducts({ categoryId, search, minPrice, maxPrice });
+    return res.status(200).json({ success: true, products });
+  } catch (err) {
+    next(err);
   }
 };
 
-/**
- * Get product by ID
- */
-const getProductById = async (req, res) => {
+const getProductById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const product = await productService.getProductById(id);
-
-    return res.status(200).json({
-      success: true,
-      product,
-    });
-  } catch (error) {
-    const status = error.message === "Product not found" ? 404 : 400;
-    return res.status(status).json({
-      success: false,
-      message: error.message,
-    });
+    const product = await productService.getProductById(req.params.id);
+    return res.status(200).json({ success: true, product });
+  } catch (err) {
+    if (err.message === "Product not found") err.statusCode = 404;
+    next(err);
   }
 };
 
-/**
- * Update a product
- */
-const updateProduct = async (req, res) => {
+const updateProduct = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const product = await productService.updateProduct(id, req.body);
-
-    return res.status(200).json({
-      success: true,
-      message: "Product updated successfully",
-      product,
-    });
-  } catch (error) {
-    const status = error.message === "Product not found" ? 404 : 400;
-    return res.status(status).json({
-      success: false,
-      message: error.message,
-    });
+    const product = await productService.updateProduct(req.params.id, req.body);
+    return res.status(200).json({ success: true, message: "Product updated successfully", product });
+  } catch (err) {
+    if (err.message === "Product not found") err.statusCode = 404;
+    next(err);
   }
 };
 
-/**
- * Delete a product
- */
-const deleteProduct = async (req, res) => {
+const deleteProduct = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    await productService.deleteProduct(id);
-
-    return res.status(200).json({
-      success: true,
-      message: "Product deleted successfully",
-    });
-  } catch (error) {
-    const status = error.message === "Product not found" ? 404 : 400;
-    return res.status(status).json({
-      success: false,
-      message: error.message,
-    });
+    await productService.deleteProduct(req.params.id);
+    return res.status(200).json({ success: true, message: "Product deleted successfully" });
+  } catch (err) {
+    if (err.message === "Product not found") err.statusCode = 404;
+    next(err);
   }
 };
 
-export {
-  createProduct,
-  getProducts,
-  getProductById,
-  updateProduct,
-  deleteProduct,
-};
+export { createProduct, getProducts, getProductById, updateProduct, deleteProduct };
