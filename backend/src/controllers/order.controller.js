@@ -2,7 +2,8 @@ import * as orderService from "../service/order.service.js";
 
 const createOrder = async (req, res, next) => {
   try {
-    const order = await orderService.createOrder(req.user.userId);
+    const { shippingInfo } = req.body || {};
+    const order = await orderService.createOrder(req.user.userId, { shippingInfo });
     return res.status(201).json({ success: true, message: "Order created successfully", order });
   } catch (err) {
     if (!err.statusCode) err.statusCode = 400;
@@ -10,15 +11,16 @@ const createOrder = async (req, res, next) => {
   }
 };
 
-
-const getOrders = async (req, res, next) => {
+const getUserOrders = async (req, res, next) => {
   try {
-    const orders = await orderService.getOrders(req.user.userId);
+    const orders = await orderService.getUserOrders(req.user.userId);
     return res.status(200).json({ success: true, orders });
   } catch (err) {
     next(err);
   }
 };
+
+const getOrders = getUserOrders;
 
 const getOrderById = async (req, res, next) => {
   try {
@@ -56,4 +58,21 @@ const updateOrderStatus = async (req, res, next) => {
   }
 };
 
-export { createOrder, getOrders, getOrderById, getAllOrders, updateOrderStatus };
+const getDashboardStats = async (req, res, next) => {
+  try {
+    const stats = await orderService.getDashboardStats();
+    return res.status(200).json({ success: true, stats });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export {
+  createOrder,
+  getUserOrders,
+  getOrders,
+  getOrderById,
+  getAllOrders,
+  updateOrderStatus,
+  getDashboardStats,
+};
