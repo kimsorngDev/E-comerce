@@ -142,41 +142,55 @@ export default function CheckoutPage() {
 
       const orderId = createdOrder?.id || Math.floor(1000 + Math.random() * 9000);
 
-      // Offline fallback: save order locally only if backend is completely offline
-      if (!createdOrder) {
-        const newOrder: Order = {
-          id: orderId,
-          userId: 0,
-          status: "PENDING",
-          totalAmount: total,
-          createdAt: new Date().toISOString(),
-          items: items.map((i) => ({
-            id: i.id,
-            quantity: i.quantity,
-            price: i.product.price,
-            product: {
-              id: i.product.id,
-              name: i.product.name,
-              imageUrl: i.product.imageUrl,
-            },
-          })),
-          shippingInfo: {
-            fullName: formData.fullName,
-            address: formData.address,
-            city: formData.city,
-            postalCode: formData.postalCode,
-            phone: formData.phone,
-          },
-        };
+      // Save order with shippingInfo to user's local storage for robust offline/online presentation
+      if (typeof window !== "undefined") {
+        const orderToSave: Order = createdOrder
+          ? {
+              ...createdOrder,
+              shippingInfo: {
+                fullName: formData.fullName,
+                address: formData.address,
+                city: formData.city,
+                postalCode: formData.postalCode,
+                phone: formData.phone,
+              },
+            }
+          : {
+              id: orderId,
+              userId: 0,
+              status: "PENDING",
+              totalAmount: total,
+              createdAt: new Date().toISOString(),
+              items: items.map((i) => ({
+                id: i.id,
+                quantity: i.quantity,
+                price: i.product.price,
+                product: {
+                  id: i.product.id,
+                  name: i.product.name,
+                  imageUrl: i.product.imageUrl,
+                },
+              })),
+              shippingInfo: {
+                fullName: formData.fullName,
+                address: formData.address,
+                city: formData.city,
+                postalCode: formData.postalCode,
+                phone: formData.phone,
+              },
+            };
 
-        if (typeof window !== "undefined") {
-          const userEmail = (localStorage.getItem("userEmail") || formData.email || "default").toLowerCase();
-          const userKey = `orders_${userEmail}`;
-          const storedOrdersRaw = localStorage.getItem(userKey);
-          const storedOrders = storedOrdersRaw ? JSON.parse(storedOrdersRaw) : [];
-          storedOrders.unshift(newOrder);
-          localStorage.setItem(userKey, JSON.stringify(storedOrders));
+        const userEmail = (localStorage.getItem("userEmail") || formData.email || "default").toLowerCase();
+        const userKey = `orders_${userEmail}`;
+        const storedOrdersRaw = localStorage.getItem(userKey);
+        const storedOrders: Order[] = storedOrdersRaw ? JSON.parse(storedOrdersRaw) : [];
+        const existingIdx = storedOrders.findIndex((o) => String(o.id) === String(orderId));
+        if (existingIdx > -1) {
+          storedOrders[existingIdx] = orderToSave;
+        } else {
+          storedOrders.unshift(orderToSave);
         }
+        localStorage.setItem(userKey, JSON.stringify(storedOrders));
       }
 
       // 3. Clear cart after successful order creation

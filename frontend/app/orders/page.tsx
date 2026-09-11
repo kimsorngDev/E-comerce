@@ -176,13 +176,19 @@ export default function OrdersPage() {
                   ))}
                 </div>
 
-                {/* Bottom link */}
-                <div className="pt-2 border-t border-slate-100 flex justify-end">
+                {/* Bottom links */}
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-4">
                   <Link
-                    href={`/orders/success/${order.id}`}
+                    href={`/orders/${order.id}`}
                     className="text-xs font-bold text-slate-900 hover:underline flex items-center gap-1"
                   >
-                    View Receipt &rarr;
+                    View Details &rarr;
+                  </Link>
+                  <Link
+                    href={`/orders/success/${order.id}`}
+                    className="text-xs font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1"
+                  >
+                    Receipt
                   </Link>
                 </div>
               </div>

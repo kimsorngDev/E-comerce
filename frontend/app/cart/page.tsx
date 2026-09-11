@@ -33,7 +33,7 @@ export default function CartPage() {
       imageUrl: item.product.imageUrl || "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80",
     },
     quantity: item.quantity,
-    color: "Black",
+    color: (item as any).color,
   }));
 
   const handleQtyChange = async (itemId: number, newQty: number) => {

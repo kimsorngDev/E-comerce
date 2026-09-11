@@ -85,12 +85,6 @@ export default function AccountPage() {
   }, [isLoggedIn]);
 
   const handleLogout = () => {
-    // Clean up per-user local order data
-    const currentEmail = localStorage.getItem("userEmail");
-    if (currentEmail) {
-      localStorage.removeItem(`orders_${currentEmail.toLowerCase()}`);
-    }
-    localStorage.removeItem("userOrders");
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("token");
     localStorage.removeItem("userName");

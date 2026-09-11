@@ -84,13 +84,17 @@ export default function RegisterPage() {
         localStorage.removeItem("isAdmin");
       }
 
-      // 3. Dispatch storage event so navbar and all components refresh
+      // 3. Dispatch events so navbar, cart, and all components refresh
       window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new Event("cart-updated"));
 
       setSuccessMessage("Account created successfully! Redirecting...");
 
+      const params = new URLSearchParams(window.location.search);
+      const redirectUrl = params.get("redirect") || (newUserObj.role === "ADMIN" ? "/admin" : "/account");
+
       setTimeout(() => {
-        router.push("/account");
+        router.push(redirectUrl);
       }, 1000);
     } catch (err: any) {
       setErrorMessage(err?.message || "Failed to create account. Please try again.");

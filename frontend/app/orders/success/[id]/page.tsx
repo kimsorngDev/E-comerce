@@ -102,11 +102,18 @@ export default function OrderSuccessPage({ params }: { params: Promise<{ id: str
 
           <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="/orders"
+              href={`/orders/${order?.id || orderId}`}
               className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-xs sm:text-sm font-bold text-white hover:bg-slate-800 transition-all shadow-sm"
             >
               <i className="bi bi-box-seam"></i>
               View Order Details
+            </Link>
+            <Link
+              href="/orders"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-2xs"
+            >
+              <i className="bi bi-list-task"></i>
+              My Orders
             </Link>
             <Link
               href="/products"

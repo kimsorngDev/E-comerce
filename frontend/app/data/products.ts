@@ -396,7 +396,7 @@ export const PRODUCTS: Product[] = [
 // Helper to get product by ID
 export function getProductById(id: number | string): Product | undefined {
   const numId = Number(id);
-  return PRODUCTS.find((p) => p.id === numId) || PRODUCTS[0];
+  return PRODUCTS.find((p) => p.id === numId);
 }
 
 // Mock initial cart items for visual demo matching mockup

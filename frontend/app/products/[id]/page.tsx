@@ -20,8 +20,8 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
   const { addToCart } = useCart();
   const { id } = use(params);
 
-  const [product, setProduct] = useState<Product>(getProductById(id) || PRODUCTS[0]);
-  const [selectedImage, setSelectedImage] = useState<string>("");
+  const [product, setProduct] = useState<Product>(() => getProductById(id) || PRODUCTS[0]);
+  const [selectedImage, setSelectedImage] = useState<string>(() => getProductById(id)?.imageUrl || PRODUCTS[0].imageUrl);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
 
   useEffect(() => {
     async function loadProduct() {
-      const mockProd = getProductById(id);
+      const mockProd = getProductById(id) || PRODUCTS[0];
       if (mockProd) {
         setProduct(mockProd);
         setSelectedImage(mockProd.imageUrl);
@@ -42,8 +42,8 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
             ...mockProd,
             ...apiProd,
             specs: mockProd?.specs || {
-              brand: apiProd.brand || "Apple",
-              model: apiProd.name || "iPhone 15",
+              brand: apiProd.brand || "Brand",
+              model: apiProd.name || "Model",
               storage: "128GB",
               color: "Black",
               condition: "New",

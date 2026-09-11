@@ -97,6 +97,7 @@ export default function LoginPage() {
       }
 
       window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new Event("cart-updated"));
 
       const params = new URLSearchParams(window.location.search);
       const redirectUrl = params.get("redirect") || (userRole === "ADMIN" ? "/admin" : "/");

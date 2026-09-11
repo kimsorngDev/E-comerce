@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ProductCard from "../../components/ProductCard";
+import { fetchApi } from "../../lib/api";
 import { PRODUCTS, CATEGORIES, BRANDS, Product } from "../data/products";
 
 function ProductsContent() {
@@ -10,12 +11,27 @@ function ProductsContent() {
   const categoryParam = searchParams.get("category");
   const searchParam = searchParams.get("search");
 
+  const [allProducts, setAllProducts] = useState<Product[]>(PRODUCTS);
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryParam || "all");
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<string>("popular");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const data = await fetchApi("/products");
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+          setAllProducts(data.products);
+        }
+      } catch {
+        // Fallback to local mock products
+      }
+    }
+    loadProducts();
+  }, []);
 
   useEffect(() => {
     if (categoryParam) {
@@ -50,10 +66,12 @@ function ProductsContent() {
 
   // Filter and Sort logic
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((product) => {
+    return allProducts.filter((product) => {
       // Category filter
       if (selectedCategory && selectedCategory !== "all") {
-        if (product.category.slug !== selectedCategory && product.category.name.toLowerCase() !== selectedCategory.toLowerCase()) {
+        const catSlug = product.category?.slug || "";
+        const catName = product.category?.name || "";
+        if (catSlug !== selectedCategory && catName.toLowerCase() !== selectedCategory.toLowerCase()) {
           return false;
         }
       }
@@ -61,9 +79,9 @@ function ProductsContent() {
       // Search query filter
       if (searchParam) {
         const query = searchParam.toLowerCase();
-        const matchesName = product.name.toLowerCase().includes(query);
-        const matchesBrand = product.brand.toLowerCase().includes(query);
-        const matchesCat = product.category.name.toLowerCase().includes(query);
+        const matchesName = (product.name || "").toLowerCase().includes(query);
+        const matchesBrand = (product.brand || "").toLowerCase().includes(query);
+        const matchesCat = (product.category?.name || "").toLowerCase().includes(query);
         if (!matchesName && !matchesBrand && !matchesCat) {
           return false;
         }
@@ -91,10 +109,10 @@ function ProductsContent() {
       if (sortBy === "popular") return (b.reviewsCount || 0) - (a.reviewsCount || 0);
       if (sortBy === "price-low") return a.price - b.price;
       if (sortBy === "price-high") return b.price - a.price;
-      if (sortBy === "rating") return b.rating - a.rating;
+      if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
       return 0;
     });
-  }, [selectedCategory, searchParam, selectedBrands, selectedPriceRanges, sortBy]);
+  }, [allProducts, selectedCategory, searchParam, selectedBrands, selectedPriceRanges, sortBy]);
 
   const itemsPerPage = 9;
   const paginatedProducts = filteredProducts.slice(
@@ -113,7 +131,8 @@ function ProductsContent() {
               Products
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Showing 1-{Math.min(itemsPerPage, filteredProducts.length)} of {PRODUCTS.length * 3 + 6} products
+              Showing {filteredProducts.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}-
+              {Math.min(currentPage * itemsPerPage, filteredProducts.length)} of {filteredProducts.length} products
             </p>
           </div>
 

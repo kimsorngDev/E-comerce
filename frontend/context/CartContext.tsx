@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { cartApi, Cart, CartItem } from "../lib/api";
+import { PRODUCTS } from "../app/data/products";
 
 type CartContextType = {
   cart: Cart | null;
@@ -57,6 +58,35 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return emptyCart();
   };
 
+  const mergeGuestCartToUser = async () => {
+    if (typeof window === "undefined") return;
+    const guestData = localStorage.getItem("shopEaseCart_guest");
+    if (!guestData) return;
+    try {
+      const guestItems: CartItem[] = JSON.parse(guestData);
+      if (Array.isArray(guestItems) && guestItems.length > 0) {
+        // Clear guest cart key so we only migrate once
+        localStorage.removeItem("shopEaseCart_guest");
+
+        // Add guest items to backend if token exists
+        const token = localStorage.getItem("token");
+        if (token) {
+          for (const gItem of guestItems) {
+            if (gItem.product?.id) {
+              try {
+                await cartApi.addToCart(gItem.product.id, gItem.quantity);
+              } catch {
+                // ignore
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   const fetchCart = useCallback(async () => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -69,14 +99,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       setError(null);
+      await mergeGuestCartToUser();
       const cartData = await cartApi.getCart();
       if (cartData && Array.isArray(cartData.items)) {
         setCart(cartData);
         saveLocalCart(cartData.items);
       } else {
-        const empty = emptyCart();
-        setCart(empty);
-        saveLocalCart([]);
+        const local = getLocalCart();
+        setCart(local);
       }
     } catch (err: any) {
       console.warn("Cart API offline, using local cart:", err?.message);
@@ -120,7 +150,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         console.warn("addToCart API warning:", apiErr?.message);
       }
 
-      // Local cart fallback
+      // Local cart fallback with real product catalog details
+      const realProd = PRODUCTS.find((p) => p.id === productId);
       const current = cart?.items ? [...cart.items] : [];
       const existingIdx = current.findIndex((i) => i.product?.id === productId);
 
@@ -132,9 +163,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           quantity,
           product: {
             id: productId,
-            name: "Product #" + productId,
-            price: 99.0,
-            imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
+            name: realProd?.name || ("Product #" + productId),
+            price: realProd?.price ?? 99.0,
+            imageUrl: realProd?.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
           },
         });
       }
